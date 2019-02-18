@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "61070336547",
+    "firebase_url": "https://kahan-chalna-hai.firebaseio.com",
+    "project_id": "kahan-chalna-hai",
+    "storage_bucket": "kahan-chalna-hai.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:61070336547:android:1e5ba77cb4320ffe",
+        "android_client_info": {
+          "package_name": "com.example.dirty.kahanchalnahai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "61070336547-tk78vsh2095msvt2olif4b6n5vkis067.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dirty.kahanchalnahai",
+            "certificate_hash": "b43c447e835c9c8392b9284540be2aeec1dec5dd"
+          }
+        },
+        {
+          "client_id": "61070336547-h67e80l8jkn78bd3cqckflr9pua9dr7i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dirty.kahanchalnahai",
+            "certificate_hash": "35bcdb9df3c723b4e8731d0a210e45db26951de4"
+          }
+        },
+        {
+          "client_id": "61070336547-13tn7kiehmcigstomj2o90qjefi34j0a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw47BC1fXjBRzwddgx9IkIcpCLbrhmFZ8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "61070336547-13tn7kiehmcigstomj2o90qjefi34j0a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

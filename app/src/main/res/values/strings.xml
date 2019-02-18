@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Kahan Chalna Hai</string>
+    <string name="title_activity_drivers_map">Map</string>
+    <string name="title_activity_customer_maps">Map</string>
+</resources>
