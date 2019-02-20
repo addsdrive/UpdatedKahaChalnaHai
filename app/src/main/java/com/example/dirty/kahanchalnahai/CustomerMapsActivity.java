@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -11,14 +12,18 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
+
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,15 +39,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.HashMap;
 import java.util.List;
+import com.google.android.gms.location.FusedLocationProviderClient;
 
 public class CustomerMapsActivity extends FragmentActivity implements
-        OnMapReadyCallback , GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener
-{
+        OnMapReadyCallback {
 
     private GoogleMap mMap;
     GoogleApiClient googleApiClient;
@@ -57,6 +59,8 @@ public class CustomerMapsActivity extends FragmentActivity implements
     private LatLng CustomerPickUpLocation ;
     private DatabaseReference CustomerDatabaseRef , DriverAvailableRef , DriverRef , DriverLocationRef ;
     Marker DriverMarker ;
+    FusedLocationProviderClient locationProviderClient;
+    Marker user_marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -76,6 +80,7 @@ public class CustomerMapsActivity extends FragmentActivity implements
         CustomerLogOut = (Button)findViewById(R.id.customer_logout);
         CustomerSettings = (Button)findViewById(R.id.customer_settings);
         CustomerCallCab = (Button)findViewById(R.id.customer_call_cab);
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         CustomerLogOut.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -105,54 +110,31 @@ public class CustomerMapsActivity extends FragmentActivity implements
     public void onMapReady(GoogleMap googleMap)
     {
         mMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            return;
-        }
-        buildGoogleApiClient();
-        mMap.setMyLocationEnabled(true);
-    }
-
-    protected synchronized void buildGoogleApiClient()
-    {
-        googleApiClient =  new GoogleApiClient.Builder(this).addConnectionCallbacks(this).
-                addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
-        googleApiClient.connect();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle)
-    {
+        mMap.getUiSettings().setCompassEnabled(false);
         locationRequest = new LocationRequest();
-        //To update the last location of user after every second
         locationRequest.setInterval(1000);
         locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(locationRequest.PRIORITY_HIGH_ACCURACY);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            return;
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        if (Permission.getInstance(CustomerMapsActivity.this).checkLocationPermission()) {
+            mMap.setMyLocationEnabled(true);
+            locationProviderClient.requestLocationUpdates(locationRequest, mLocationCallBack, Looper.myLooper());
         }
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
 
-    }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        lastLocation = location;
-        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
-    }
+    LocationCallback mLocationCallBack = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            lastLocation = locationResult.getLastLocation();
+            LatLng latLng = new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude());
+            if(user_marker != null)
+                user_marker.remove();
+            user_marker = mMap.addMarker(new MarkerOptions().position(latLng).title("My Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+        }
+    };
 
     @Override
     protected void onStop()
@@ -267,6 +249,28 @@ public class CustomerMapsActivity extends FragmentActivity implements
 
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+        switch (requestCode) {
+            //LOCATION_PERMISSION_CODE = 101 inside Permission class
+            case 101: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!
+                    onMapReady(mMap);
+                } else {
+                    // permission denied,
+                    // Ask again for the permission
+                    Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
 }
